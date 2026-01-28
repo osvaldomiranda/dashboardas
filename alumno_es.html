@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard Docente · Avance del Alumno (Demo)</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --text:#e9eefc;
+      --muted:#aab4da;
+      --border:rgba(255,255,255,.10);
+      --good:#39d98a;
+      --warn:#ffcc66;
+      --bad:#ff5c77;
+      --info:#6aa9ff;
+      --chip:#1a2550;
+      --shadow: 0 18px 40px rgba(0,0,0,.35);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 800px at 10% 0%, rgba(106,169,255,.18), transparent 55%),
+                  radial-gradient(900px 700px at 90% 20%, rgba(57,217,138,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    header{
+      padding:22px 20px 10px;
+      max-width:1200px;
+      margin:0 auto;
+      display:flex;
+      gap:14px;
+      align-items:flex-end;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .brand h1{margin:0;font-size:20px}
+    .brand p{margin:6px 0 0;color:var(--muted);font-size:13px}
+    .top-actions{display:flex;gap:10px}
+    button, select{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:13px;
+    }
+
+    main{
+      max-width:1200px;
+      margin:0 auto;
+      padding:10px 20px 34px;
+      display:grid;
+      grid-template-columns: 520px 1fr;
+      gap:18px;
+    }
+    @media (max-width:980px){
+      main{grid-template-columns:1fr}
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .card .hd h2{margin:0;font-size:14px}
+    .card .bd{padding:14px}
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      font-size:12px;
+      color:var(--muted);
+    }
+    .dot{width:8px;height:8px;border-radius:50%}
+    .dot.good{background:var(--good)}
+    .dot.warn{background:var(--warn)}
+    .dot.bad{background:var(--bad)}
+    .dot.info{background:var(--info)}
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:12px;
+    }
+    .span-4{grid-column:span 4}
+    .span-6{grid-column:span 6}
+    .span-8{grid-column:span 8}
+    @media (max-width:980px){
+      .span-4,.span-6,.span-8{grid-column:span 12}
+    }
+
+    .metric{
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background: rgba(0,0,0,.18);
+    }
+    .metric .k{font-size:12px;color:var(--muted)}
+    .metric .v{font-size:18px;margin-top:6px}
+
+    .bar{
+      height:10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      overflow:hidden;
+      margin-top:10px;
+    }
+    .bar > div{
+      height:100%;
+      background: linear-gradient(90deg, #6aa9ff, #39d98a);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12.5px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    th,td{
+      padding:10px;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+    }
+    th{color:var(--muted)}
+    tr:last-child td{border-bottom:none}
+
+    .tag{
+      display:inline-flex;
+      gap:6px;
+      align-items:center;
+      padding:5px 8px;
+      border-radius:999px;
+      background:var(--chip);
+      border:1px solid var(--border);
+      font-size:12px;
+      margin:4px 6px 0 0;
+    }
+
+    canvas{
+      width:100%;
+      height:340px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.18);
+    }
+
+    .footer-note{
+      max-width:1200px;
+      margin:0 auto;
+      padding:12px 20px;
+      font-size:12px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Dashboard Docente · Avance del Alumno</h1>
+    <p>Vista detallada del progreso, comprensión conceptual y exploración dentro del juego.</p>
+  </div>
+  <div class="top-actions">
+    <select id="studentSelect"></select>
+    <button onclick="location.reload()">Datos demo nuevos</button>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="hd">
+      <h2>Avance por contenidos (Marte · demo)</h2>
+      <span id="statusPill" class="pill"><span class="dot info"></span> Vista demostrativa</span>
+    </div>
+    <div class="bd">
+      <canvas id="chart"></canvas>
+      <p style="font-size:12px;color:var(--muted)">
+        *Porcentaje estimado a partir de acciones, objetivos y preguntas respondidas en la misión.
+      </p>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="hd">
+      <h2>Detalle pedagógico</h2>
+      <span class="pill"><b>Curso:</b> 6° Básico · Ciencias</span>
+    </div>
+    <div class="bd">
+      <div class="grid">
+
+        <div class="metric span-4">
+          <div class="k">Alumno</div>
+          <div class="v" id="mUser">—</div>
+          <div class="bar"><div id="progressBar"></div></div>
+          <div id="progressText" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+        </div>
+
+        <div class="metric span-4">
+          <div class="k">Misión</div>
+          <div class="v">Marte</div>
+        </div>
+
+        <div class="metric span-4">
+          <div class="k">Objetivos completados</div>
+          <div class="v" id="objPct">—</div>
+        </div>
+
+        <div class="metric span-8">
+          <div class="k">Objetivos de aprendizaje</div>
+          <div id="objectives"></div>
+        </div>
+
+        <div class="metric span-4">
+          <div class="k">Contenidos desbloqueados</div>
+          <div id="contents"></div>
+        </div>
+
+        <div class="metric span-6">
+          <div class="k">Preguntas conceptuales</div>
+          <div id="questions"></div>
+        </div>
+
+        <div class="metric span-6">
+          <div class="k">Exploración e interacción</div>
+          <div id="flags"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="footer-note">
+  Esta vista permite al docente acompañar el aprendizaje sin usarla como instrumento de calificación.
+</div>
+
+<script>
+  const students=["Valentina R.","Matías S.","Antonia P."];
+  const student=students[Math.floor(Math.random()*students.length)];
+  document.getElementById("studentSelect").innerHTML=students.map(s=>`<option>${s}</option>`).join("");
+  document.getElementById("mUser").textContent=student;
+
+  const progress=Math.floor(50+Math.random()*45);
+  document.getElementById("progressBar").style.width=progress+"%";
+  document.getElementById("progressText").textContent="Avance global estimado: "+progress+"%";
+  document.getElementById("objPct").textContent=progress+"%";
+
+  const objectives=[
+    "Exploró el entorno marciano",
+    "Recolectó datos científicos",
+    "Analizó la atmósfera de Marte",
+    "Reflexionó sobre la habitabilidad"
+  ];
+  document.getElementById("objectives").innerHTML=objectives.map(o=>`<div class="tag"><span class="dot good"></span>${o}</div>`).join("");
+
+  const contents=["Atmósfera","Temperatura","Agua en Marte","Gravedad"];
+  document.getElementById("contents").innerHTML=contents.map(c=>`<div class="tag"><span class="dot info"></span>${c}</div>`).join("");
+
+  const questions=[
+    "¿Por qué Marte es frío?",
+    "¿Qué evidencia muestra agua pasada?",
+    "¿Qué gas domina su atmósfera?"
+  ];
+  document.getElementById("questions").innerHTML="<ul>"+questions.map(q=>"<li>"+q+"</li>").join("")+"</ul>";
+
+  document.getElementById("flags").innerHTML=`
+    <div class="tag"><span class="dot good"></span>Exploró zonas clave</div>
+    <div class="tag"><span class="dot warn"></span>No completó el cuestionario final</div>
+  `;
+
+  const ctx=document.getElementById("chart").getContext("2d");
+  const labels=["Atmósfera","Temperatura","Agua","Habitabilidad","Tormentas"];
+  labels.forEach((l,i)=>{
+    ctx.fillStyle="#aab4da";
+    ctx.fillText(l,10,40+i*50);
+    ctx.fillStyle=i<3?"#39d98a":"#ffcc66";
+    ctx.fillRect(160,28+i*50,progress*2,16);
+  });
+</script>
+
+</body>
+</html>
