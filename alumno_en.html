@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Teacher Dashboard · Student Progress (Demo)</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121a33;
+      --text:#e9eefc;
+      --muted:#aab4da;
+      --border:rgba(255,255,255,.10);
+      --good:#39d98a;
+      --warn:#ffcc66;
+      --bad:#ff5c77;
+      --info:#6aa9ff;
+      --chip:#1a2550;
+      --shadow: 0 18px 40px rgba(0,0,0,.35);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 800px at 10% 0%, rgba(106,169,255,.18), transparent 55%),
+                  radial-gradient(900px 700px at 90% 20%, rgba(57,217,138,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    header{
+      padding:22px 20px 10px;
+      max-width:1200px;
+      margin:0 auto;
+      display:flex;
+      gap:14px;
+      align-items:flex-end;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .brand{display:flex;flex-direction:column;gap:6px}
+    .brand h1{margin:0;font-size:20px;letter-spacing:.3px}
+    .brand p{margin:0;color:var(--muted);font-size:13px;line-height:1.25}
+    .top-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    button, select{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:13px;
+      outline:none;
+    }
+    button:hover{ background: rgba(255,255,255,.10); }
+
+    main{
+      max-width:1200px;
+      margin:0 auto;
+      padding:10px 20px 34px;
+      display:grid;
+      grid-template-columns: 520px 1fr;
+      gap:18px;
+    }
+    @media (max-width: 980px){
+      main{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 14px 10px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .card .hd h2{font-size:14px;margin:0;color:var(--text);letter-spacing:.2px}
+    .card .bd{ padding:14px; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .pill b{ color:var(--text); font-weight:600; }
+    .dot{ width:8px; height:8px; border-radius:999px; display:inline-block; }
+    .dot.good{ background: var(--good); }
+    .dot.warn{ background: var(--warn); }
+    .dot.bad{ background: var(--bad); }
+    .dot.info{ background: var(--info); }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:12px;
+    }
+    .span-4{ grid-column: span 4; }
+    .span-6{ grid-column: span 6; }
+    .span-8{ grid-column: span 8; }
+    .span-12{ grid-column: span 12; }
+    @media (max-width: 980px){
+      .span-4,.span-6,.span-8{ grid-column: span 12; }
+    }
+
+    .metric{
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background: rgba(0,0,0,.18);
+    }
+    .metric .k{ color:var(--muted); font-size:12px; margin-bottom:6px; }
+    .metric .v{
+      font-size:18px;
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+    }
+    .metric .v small{ color:var(--muted); font-size:12px; }
+
+    .bar{
+      height:10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      overflow:hidden;
+      margin-top:10px;
+    }
+    .bar > div{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(106,169,255,1), rgba(57,217,138,1));
+      transition: width .35s ease;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      overflow:hidden;
+      border-radius: 14px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.14);
+    }
+    th, td{
+      padding:10px 10px;
+      border-bottom:1px solid var(--border);
+      font-size:12.5px;
+      text-align:left;
+      vertical-align:top;
+    }
+    th{ color:var(--muted); font-weight:600; }
+    tr:last-child td{ border-bottom:none; }
+
+    .tag{
+      display:inline-flex;
+      padding:5px 8px;
+      border-radius:999px;
+      background: var(--chip);
+      border:1px solid var(--border);
+      font-size:12px;
+      color:var(--text);
+      margin:4px 6px 0 0;
+      align-items:center;
+      gap:6px;
+    }
+
+    .mono{ font-family: var(--mono); }
+    .muted{ color:var(--muted); }
+    .small{ font-size:12px; }
+    .ok{ color: var(--good); }
+    .warn{ color: var(--warn); }
+    .bad{ color: var(--bad); }
+
+    /* Chart */
+    .chartWrap{ display:flex; flex-direction:column; gap:10px; }
+    .chartLegend{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .chartLegend .item{display:flex;gap:8px;align-items:center}
+    canvas{
+      width:100%;
+      height:340px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.18);
+    }
+
+    .footer-note{
+      color:var(--muted);
+      font-size:12px;
+      padding:12px 20px 24px;
+      max-width:1200px;
+      margin:0 auto;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>Teacher Dashboard · Student Progress</h1>
+      <p>Detailed view: content mastery estimate, objectives, questions, unlocked concepts, and exploration signals.</p>
+    </div>
+    <div class="top-actions">
+      <select id="studentSelect" title="Student"></select>
+      <select id="stageSelect" title="Mission"></select>
+      <button id="btnRandom">Shuffle demo data</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left: Content chart -->
+    <section class="card">
+      <div class="hd">
+        <h2>Progress by learning content (Mars · demo)</h2>
+        <span id="statusPill" class="pill"><span class="dot info"></span>Demo view</span>
+      </div>
+      <div class="bd">
+        <div class="chartWrap">
+          <div class="chartLegend">
+            <div class="item"><span class="dot info"></span> Estimated progress per content</div>
+            <div class="item"><span class="dot good"></span> ≥ 80% consolidated</div>
+            <div class="item"><span class="dot warn"></span> 50–79% in progress</div>
+            <div class="item"><span class="dot bad"></span> &lt; 50% needs support</div>
+          </div>
+          <canvas id="contentChart" width="1000" height="500"></canvas>
+          <div class="small muted">
+            *This % is computed from demo evidence (objectives + questions + unlocks). In production it comes from real game logs.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Student details -->
+    <section class="card">
+      <div class="hd">
+        <h2>Teacher view</h2>
+        <span class="pill"><b>Class:</b> 6th Grade · Science</span>
+      </div>
+
+      <div class="bd">
+        <div class="grid">
+          <div class="metric span-4">
+            <div class="k">Student</div>
+            <div class="v" id="mUser">—</div>
+            <div class="bar"><div id="mProgressBar"></div></div>
+            <div class="small muted" id="mProgressText" style="margin-top:8px;">—</div>
+          </div>
+
+          <div class="metric span-4">
+            <div class="k">Mission</div>
+            <div class="v" id="mStage">—</div>
+            <div class="small muted" id="mStep">stageStep: —</div>
+          </div>
+
+          <div class="metric span-4">
+            <div class="k">Objectives</div>
+            <div class="v"><span id="mObjDone">—</span> <small>/ <span id="mObjTotal">—</span> completed</small></div>
+            <div class="small muted" id="mObjPct">—</div>
+          </div>
+
+          <div class="span-8">
+            <div class="metric">
+              <div class="k">Objectives (teacher-friendly)</div>
+              <div class="small muted" style="margin-bottom:10px;">Hands-on evidence of progress inside the mission</div>
+              <div id="objectivesTableWrap"></div>
+            </div>
+          </div>
+
+          <div class="span-4">
+            <div class="metric" style="margin-bottom:12px;">
+              <div class="k">Unlocked concepts (encyclopedia)</div>
+              <div id="encyWrap"></div>
+            </div>
+
+            <div class="metric">
+              <div class="k">Unlocked skills</div>
+              <div id="skillsWrap"></div>
+            </div>
+          </div>
+
+          <div class="span-6">
+            <div class="metric">
+              <div class="k">Answered questions</div>
+              <div class="small muted" style="margin-bottom:10px;">Conceptual evidence of understanding</div>
+              <div id="questionsTableWrap"></div>
+            </div>
+          </div>
+
+          <div class="span-6">
+            <div class="metric">
+              <div class="k">Exploration & interaction signals</div>
+              <div class="small muted" style="margin-bottom:10px;">Clear exploration indicators and interaction intensity</div>
+              <div id="flagsWrap"></div>
+              <div style="margin-top:10px;" class="small muted">
+                Interactions: <b id="usedCount">—</b>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /grid -->
+      </div><!-- /bd -->
+    </section>
+  </main>
+
+  <div class="footer-note">
+    Next step: plug in real logs. This page will stay the same; only the data source changes.
+  </div>
+
+  <script>
+    // -----------------------------
+    // DEMO DATA (English UI)
+    // -----------------------------
+    const CONTENTS_MARS = [
+      "Thin atmosphere (CO₂)",
+      "Temperature & seasons",
+      "Gravity & motion",
+      "Water/ice evidence",
+      "Past habitability",
+      "Dust storms"
+    ];
+
+    const ENCYC_MAP_MARS = {
+      201: "Mars",
+      202: "Thin atmosphere",
+      203: "Dust storms",
+      204: "Water & ice",
+      205: "Past habitability",
+      206: "Seasons on Mars"
+    };
+
+    const SKILL_MAP = {
+      1:"Basic drone armor",
+      2:"Gas filter",
+      3:"Pressure stabilizer",
+      4:"Atmospheric suit"
+    };
+
+    // Teacher-friendly objective labels (Mars demo)
+    const OBJECTIVE_LABELS = {
+      explore_A: "Explore the landing area",
+      talk_B:    "Talk to the guide character",
+      pickup_C:  "Collect a scientific sample / data point",
+      analyze_D: "Analyze the sample in the science module",
+      hack_E:    "Calibrate an instrument (probe/antenna)",
+      synth_F:   "Complete the mission wrap-up (learning summary)"
+    };
+
+    // Teacher-friendly exploration flags (Mars demo)
+    const FLAG_LABELS = {
+      visited_polar_cap: {
+        positive: "Explored the polar cap",
+        negative: "Did not explore the polar cap"
+      },
+      dust_storm_zone: {
+        positive: "Entered a dust storm zone",
+        negative: "Did not enter dust storm zones"
+      },
+      completed_quiz: {
+        positive: "Completed the end-of-mission quiz",
+        negative: "Did not complete the end-of-mission quiz"
+      }
+    };
+
+    // 3 demo students
+    const DEMO_STUDENTS = [
+      { id:"s1", name:"Valentina R.", classLabel:"6th Grade" },
+      { id:"s2", name:"Matías S.",    classLabel:"6th Grade" },
+      { id:"s3", name:"Antonia P.",   classLabel:"6th Grade" }
+    ];
+
+    const DEMO_STAGES = [
+      { key:"1-2-Mars", label:"World 1 · Mars" }
+    ];
+
+    function makeDemoProgress(seed=0){
+      let x = 1234567 + seed*99991;
+      const rnd = (min, max) => {
+        x = (x * 1103515245 + 12345) % 2147483647;
+        const r = x / 2147483647;
+        return min + r*(max-min);
+      };
+
+      const objectives = {
+        explore_A: { isObjectiveComplete: rnd(0,1) > 0.25, objectiveQuantity: Math.round(rnd(2,5)) },
+        talk_B:    { isObjectiveComplete: rnd(0,1) > 0.35, objectiveQuantity: 1 },
+        pickup_C:  { isObjectiveComplete: rnd(0,1) > 0.45, objectiveQuantity: 1 },
+        analyze_D: { isObjectiveComplete: rnd(0,1) > 0.55, objectiveQuantity: 1 },
+        hack_E:    { isObjectiveComplete: rnd(0,1) > 0.65, objectiveQuantity: 1 },
+        synth_F:   { isObjectiveComplete: rnd(0,1) > 0.75, objectiveQuantity: 1 }
+      };
+
+      const questions = [
+        { id:"MARS_Q1", text:"What is the main gas in Mars' atmosphere?", correct:"CO₂" },
+        { id:"MARS_Q2", text:"Why is Mars so cold?", correct:"Thin atmosphere" },
+        { id:"MARS_Q3", text:"What evidence suggests water in the past?", correct:"Valleys/channels" },
+        { id:"MARS_Q4", text:"What can cause dust storms on Mars?", correct:"Strong winds + loose dust" }
+      ];
+
+      const questionRows = questions.map(q=>{
+        const p = rnd(0,1);
+        let ans = q.correct;
+        let ok = true;
+        if(p < 0.22){ ans = "No answer"; ok = false; }
+        else if(p < 0.42){ ans = "Partial answer"; ok = false; }
+        return { ...q, answer: ans, isCorrect: ok };
+      });
+
+      const unlockedEncy = Object.keys(ENCYC_MAP_MARS).map(Number).filter(_ => rnd(0,1) > 0.35);
+      const unlockedSkills = [1,2,3,4].filter(_ => rnd(0,1) > 0.45);
+
+      const flags = {
+        visited_polar_cap: rnd(0,1) > 0.55,
+        dust_storm_zone:   rnd(0,1) > 0.60,
+        completed_quiz:    rnd(0,1) > 0.40
+      };
+
+      const interactions = Math.round(rnd(12, 65));
+
+      const contentProgress = CONTENTS_MARS.map((name, idx)=>{
+        const objDone = Object.values(objectives).filter(o=>o.isObjectiveComplete).length;
+        const qOk = questionRows.filter(r=>r.isCorrect).length;
+        let base = 10 + (objDone/6)*55 + (qOk/4)*25;
+        base += (rnd(-12, 12)) + (idx-2)*1.5;
+        base = Math.max(0, Math.min(100, Math.round(base)));
+        return { name, pct: base };
+      });
+
+      const global = Math.round(contentProgress.reduce((a,b)=>a+b.pct,0)/contentProgress.length);
+      const stageStep = Math.min(18, Math.max(1, Math.round(rnd(3, 16))));
+
+      return {
+        stageKey: "1-2-Mars",
+        stageStep,
+        objectives,
+        questionRows,
+        unlockedEncy,
+        unlockedSkills,
+        flags,
+        interactions,
+        contentProgress,
+        globalProgressPct: global
+      };
+    }
+
+    const state = {
+      currentStudentId: DEMO_STUDENTS[0].id,
+      currentStageKey: DEMO_STAGES[0].key,
+      dataByStudent: new Map()
+    };
+
+    function regenAll(){
+      state.dataByStudent.clear();
+      DEMO_STUDENTS.forEach((s, i)=>{
+        state.dataByStudent.set(s.id, makeDemoProgress(i+Math.floor(Math.random()*999)));
+      });
+    }
+
+    // -----------------------------
+    // UI helpers
+    // -----------------------------
+    const el = id => document.getElementById(id);
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+      }[m]));
+    }
+
+    function buildChips(indexes, map, tone='info'){
+      if(!indexes || indexes.length===0) return `<div class="muted small">—</div>`;
+      return indexes.map(i=>{
+        const label = map?.[i] ?? `Item ${i}`;
+        const dot = tone === 'good' ? 'good' : 'info';
+        return `<span class="tag"><span class="dot ${dot}"></span>${escapeHtml(label)}</span>`;
+      }).join('');
+    }
+
+    function buildObjectivesTable(entries){
+      if(entries.length === 0) return `<div class="muted small">No objectives recorded.</div>`;
+
+      const rows = entries.map(([key, v])=>{
+        const ok = !!v?.isObjectiveComplete;
+        const qty = v?.objectiveQuantity ?? '—';
+        const label = OBJECTIVE_LABELS[key] ?? key;
+
+        const status = ok ? `<span class="ok">✅ Completed</span>` : `<span class="warn">⏳ Pending</span>`;
+
+        // Teacher-friendly evidence
+        const evidence = (qty === '—')
+          ? '—'
+          : `${qty} ${Number(qty) === 1 ? 'time' : 'times'}`;
+
+        return `
+          <tr>
+            <td>${escapeHtml(label)}</td>
+            <td>${status}</td>
+            <td class="mono">${escapeHtml(String(evidence))}</td>
+          </tr>
+        `;
+      }).join('');
+
+      return `
+        <table>
+          <thead><tr><th>Objective</th><th>Status</th><th>Evidence</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function buildQuestionsTable(rows){
+      if(!rows || rows.length === 0) return `<div class="muted small">No questions answered.</div>`;
+      const tr = rows.map(r=>{
+        const st = r.isCorrect ? `<span class="ok">✅</span>` : `<span class="bad">✖</span>`;
+        return `
+          <tr>
+            <td>${escapeHtml(r.text)}</td>
+            <td>${escapeHtml(r.answer)}</td>
+            <td>${st}</td>
+          </tr>
+        `;
+      }).join('');
+      return `
+        <table>
+          <thead><tr><th>Question</th><th>Student answer</th><th></th></tr></thead>
+          <tbody>${tr}</tbody>
+        </table>
+      `;
+    }
+
+    function interpretInteractions(n){
+      if(n >= 40) return "High exploration";
+      if(n >= 20) return "Adequate exploration";
+      if(n >= 10) return "Limited exploration";
+      return "Very low exploration";
+    }
+
+    function buildFlags(flags){
+      const entries = Object.entries(flags || {});
+      if(entries.length===0) return `<div class="muted small">No exploration signals recorded.</div>`;
+
+      return entries.map(([key, value])=>{
+        const meta = FLAG_LABELS[key];
+        const text = meta ? (value ? meta.positive : meta.negative) : `${key}: ${value ? 'yes' : 'no'}`;
+        const tone = value ? 'good' : 'warn';
+
+        return `
+          <div class="pill" style="margin:6px 6px 0 0;">
+            <span class="dot ${tone}"></span>
+            <span>${escapeHtml(text)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // -----------------------------
+    // Chart (horizontal bars)
+    // -----------------------------
+    function drawContentChart(items){
+      const canvas = el('contentChart');
+      const ctx = canvas.getContext('2d');
+
+      const cssW = canvas.clientWidth;
+      const cssH = canvas.clientHeight;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(cssW * dpr);
+      canvas.height = Math.floor(cssH * dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+
+      ctx.clearRect(0,0,cssW,cssH);
+
+      const pad = 18;
+      const left = 260;
+      const top = 18;
+      const rowH = 44;
+      const barH = 16;
+      const maxBarW = cssW - left - pad - 52;
+
+      ctx.fillStyle = 'rgba(233,238,252,.92)';
+      ctx.font = '600 14px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+      ctx.fillText('Estimated progress by learning content', pad, 16);
+
+      const ticks = [0,25,50,75,100];
+      ctx.font = '12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
+      ticks.forEach(t=>{
+        const x = left + (t/100)*maxBarW;
+        ctx.strokeStyle = 'rgba(255,255,255,.06)';
+        ctx.beginPath(); ctx.moveTo(x, top+10); ctx.lineTo(x, cssH-pad); ctx.stroke();
+        ctx.fillStyle = 'rgba(170,180,218,.75)';
+        ctx.fillText(t+'%', x-10, cssH-10);
+      });
+
+      items.forEach((it, i)=>{
+        const y = top + 36 + i*rowH;
+
+        ctx.fillStyle = 'rgba(233,238,252,.86)';
+        ctx.font = '12.5px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+        ctx.fillText(it.name, pad, y+12);
+
+        ctx.fillStyle = 'rgba(255,255,255,.08)';
+        roundRect(ctx, left, y, maxBarW, barH, 999);
+        ctx.fill();
+
+        let color = 'rgba(255,92,119,.95)';
+        if(it.pct >= 80) color = 'rgba(57,217,138,.95)';
+        else if(it.pct >= 50) color = 'rgba(255,204,102,.95)';
+
+        const w = Math.max(0, Math.min(maxBarW, (it.pct/100)*maxBarW));
+        ctx.fillStyle = color;
+        roundRect(ctx, left, y, w, barH, 999);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(233,238,252,.92)';
+        ctx.font = '600 12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
+        ctx.fillText(String(it.pct).padStart(3,' ') + '%', left + maxBarW + 12, y+13);
+      });
+    }
+
+    function roundRect(ctx, x, y, w, h, r){
+      const rr = Math.min(r, h/2, w/2);
+      ctx.beginPath();
+      ctx.moveTo(x+rr, y);
+      ctx.arcTo(x+w, y, x+w, y+h, rr);
+      ctx.arcTo(x+w, y+h, x, y+h, rr);
+      ctx.arcTo(x, y+h, x, y, rr);
+      ctx.arcTo(x, y, x+w, y, rr);
+      ctx.closePath();
+    }
+
+    // -----------------------------
+    // Render
+    // -----------------------------
+    function setStatus(global){
+      const pill = el('statusPill');
+      let label = "In progress";
+      let dot = "info";
+      if(global >= 95){ label = "Completed"; dot = "good"; }
+      else if(global < 50){ label = "Needs support"; dot = "warn"; }
+      pill.innerHTML = `<span class="dot ${dot}"></span>${label} · ${global}%`;
+    }
+
+    function populateSelects(){
+      const sSel = el('studentSelect');
+      sSel.innerHTML = '';
+      DEMO_STUDENTS.forEach(s=>{
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        sSel.appendChild(opt);
+      });
+
+      const stSel = el('stageSelect');
+      stSel.innerHTML = '';
+      DEMO_STAGES.forEach(st=>{
+        const opt = document.createElement('option');
+        opt.value = st.key;
+        opt.textContent = st.label;
+        stSel.appendChild(opt);
+      });
+
+      sSel.value = state.currentStudentId;
+      stSel.value = state.currentStageKey;
+
+      sSel.addEventListener('change', ()=>{ state.currentStudentId = sSel.value; render(); });
+      stSel.addEventListener('change', ()=>{ state.currentStageKey = stSel.value; render(); });
+    }
+
+    function render(){
+      const student = DEMO_STUDENTS.find(s=>s.id===state.currentStudentId);
+      const stage = DEMO_STAGES.find(s=>s.key===state.currentStageKey);
+      const prog = state.dataByStudent.get(state.currentStudentId);
+
+      el('mUser').textContent = student?.name ?? '—';
+      el('mStage').textContent = stage?.label ?? stage?.key ?? '—';
+      el('mStep').textContent = `stageStep: ${prog?.stageStep ?? '—'}`;
+
+      const objEntries = Object.entries(prog.objectives || {});
+      const total = objEntries.length;
+      const done = objEntries.filter(([_,v])=>v?.isObjectiveComplete).length;
+      const objPct = total ? Math.round((done/total)*100) : 0;
+
+      el('mObjDone').textContent = done;
+      el('mObjTotal').textContent = total;
+      el('mObjPct').textContent = `Objective completion: ${objPct}%`;
+
+      const global = prog.globalProgressPct ?? 0;
+      el('mProgressBar').style.width = global + '%';
+      el('mProgressText').textContent = `Overall progress (avg. across content): ${global}%`;
+      setStatus(global);
+
+      el('objectivesTableWrap').innerHTML = buildObjectivesTable(objEntries);
+      el('questionsTableWrap').innerHTML = buildQuestionsTable(prog.questionRows || []);
+      el('encyWrap').innerHTML = buildChips(prog.unlockedEncy || [], ENCYC_MAP_MARS, 'info');
+      el('skillsWrap').innerHTML = buildChips(prog.unlockedSkills || [], SKILL_MAP, 'good');
+      el('flagsWrap').innerHTML = buildFlags(prog.flags || {});
+      el('usedCount').textContent = `${prog.interactions ?? 0} · ${interpretInteractions(prog.interactions ?? 0)}`;
+
+      drawContentChart(prog.contentProgress || []);
+    }
+
+    // -----------------------------
+    // Boot
+    // -----------------------------
+    function init(){
+      regenAll();
+      populateSelects();
+      render();
+
+      el('btnRandom').addEventListener('click', ()=>{
+        regenAll();
+        render();
+      });
+
+      window.addEventListener('resize', ()=>render());
+    }
+
+    init();
+  </script>
+</body>
+</html>
