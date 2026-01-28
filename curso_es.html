@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard Docente · Curso (Demo)</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --text:#e9eefc;
+      --muted:#aab4da;
+      --border:rgba(255,255,255,.10);
+      --shadow: 0 18px 40px rgba(0,0,0,.35);
+      --radius: 18px;
+      --panel: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      --good:#39d98a;
+      --warn:#ffcc66;
+      --bad:#ff5c77;
+      --info:#6aa9ff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 800px at 10% 0%, rgba(106,169,255,.18), transparent 55%),
+                  radial-gradient(900px 700px at 90% 20%, rgba(57,217,138,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    header{
+      max-width:1200px;
+      margin:0 auto;
+      padding:22px 20px 10px;
+      display:flex;
+      gap:14px;
+      align-items:flex-end;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .brand{display:flex;flex-direction:column;gap:6px}
+    .brand h1{margin:0;font-size:20px;letter-spacing:.3px}
+    .brand p{margin:0;color:var(--muted);font-size:13px;line-height:1.25}
+    .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    button, input, select{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:13px;
+      outline:none;
+    }
+    button{cursor:pointer}
+    button:hover{ background: rgba(255,255,255,.10); }
+    main{
+      max-width:1200px;
+      margin:0 auto;
+      padding:10px 20px 34px;
+    }
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 14px 10px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .card .hd h2{font-size:14px;margin:0}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .dot{width:8px;height:8px;border-radius:999px;display:inline-block}
+    .dot.good{background:var(--good)}
+    .dot.warn{background:var(--warn)}
+    .dot.bad{background:var(--bad)}
+    .dot.info{background:var(--info)}
+    .bd{padding:14px}
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      border:1px solid var(--border);
+      border-radius: 14px;
+      overflow:hidden;
+      background: rgba(0,0,0,.14);
+    }
+    th, td{
+      padding:12px 10px;
+      border-bottom:1px solid var(--border);
+      font-size:12.5px;
+      text-align:left;
+      vertical-align:middle;
+    }
+    th{color:var(--muted);font-weight:600}
+    tr:last-child td{border-bottom:none}
+
+    .nameCell{display:flex;flex-direction:column;gap:4px}
+    .nameCell .sub{color:var(--muted);font-size:12px}
+
+    .mono{font-family:var(--mono)}
+    .right{text-align:right}
+
+    /* Mini chart cell */
+    .sparkCell{
+      min-width: 170px;
+    }
+    .sparkWrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      justify-content:space-between;
+    }
+    .spark{
+      position:relative;
+      height:10px;
+      width:110px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .spark > i{
+      display:block;
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background: linear-gradient(90deg, rgba(106,169,255,1), rgba(57,217,138,1));
+    }
+    .pct{
+      font-family:var(--mono);
+      font-size:12px;
+      color:rgba(233,238,252,.92);
+      min-width: 44px;
+      text-align:right;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .footer-note{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:10px;
+      line-height:1.35;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>Dashboard Docente · Curso</h1>
+      <p>Listado de jugadores con mini-gráficos de avance por misión (Venus, Marte, Júpiter, Saturno).</p>
+    </div>
+    <div class="actions">
+      <input id="q" placeholder="Buscar alumno..." />
+      <select id="sort">
+        <option value="total_desc">Ordenar: Total ↓</option>
+        <option value="total_asc">Ordenar: Total ↑</option>
+        <option value="name_asc">Ordenar: Nombre A→Z</option>
+        <option value="name_desc">Ordenar: Nombre Z→A</option>
+      </select>
+      <button id="btnShuffle">Regenerar datos demo</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="hd">
+        <h2>Progreso por alumno</h2>
+        <span class="pill"><span class="dot info"></span>Demo · datos ficticios</span>
+      </div>
+      <div class="bd">
+        <div id="tableWrap"></div>
+        <div class="footer-note">
+          Siguiente paso: reemplazar los porcentajes demo por los calculados desde los logs reales de cada misión.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // --------------------------
+    // Config
+    // --------------------------
+    const MISSIONS = [
+      { key:"venus",   label:"Venus" },
+      { key:"mars",    label:"Marte" },
+      { key:"jupiter", label:"Júpiter" },
+      { key:"saturn",  label:"Saturno" }
+    ];
+
+    // --------------------------
+    // Demo data generator
+    // --------------------------
+    const DEMO_NAMES = [
+      "Valentina R.","Matías S.","Antonia P.","Benjamín L.","Catalina M.",
+      "Tomás G.","Javiera C.","Vicente A.","Martina F.","Ignacio P.",
+      "Florencia D.","Sofía H."
+    ];
+
+    function makeRng(seed){
+      let x = 1234567 + seed*99991;
+      return (min, max)=>{
+        x = (x * 1103515245 + 12345) % 2147483647;
+        const r = x / 2147483647;
+        return min + r*(max-min);
+      };
+    }
+
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+    function round(n){ return Math.round(n); }
+
+    function genPlayers(){
+      const base = Math.floor(Math.random()*10000);
+      return DEMO_NAMES.map((name, i)=>{
+        const rnd = makeRng(base+i+1);
+
+        // Simula perfiles: algunos avanzan parejo, otros se quedan en una misión
+        const style = rnd(0,1);
+        const bias = style < 0.33 ? "early" : (style < 0.66 ? "balanced" : "late");
+
+        const p = {};
+        MISSIONS.forEach((m, idx)=>{
+          let v;
+          if(bias === "early"){
+            // fuerte al inicio (Venus/Marte), cae después
+            v = 80 - idx*18 + rnd(-15, 15);
+          }else if(bias === "late"){
+            // flojo al inicio, mejora después
+            v = 35 + idx*18 + rnd(-15, 15);
+          }else{
+            // balanceado
+            v = 55 + rnd(-25, 25);
+          }
+          p[m.key] = clamp(round(v), 0, 100);
+        });
+
+        // total como promedio
+        const total = round(MISSIONS.reduce((a,m)=>a+p[m.key],0)/MISSIONS.length);
+
+        return {
+          id: "p"+(i+1),
+          name,
+          course: "6°B",
+          progress: p,
+          total
+        };
+      });
+    }
+
+    // --------------------------
+    // UI render
+    // --------------------------
+    const el = id => document.getElementById(id);
+    let players = genPlayers();
+
+    function toneDot(pct){
+      if(pct >= 80) return "good";
+      if(pct >= 50) return "warn";
+      return "bad";
+    }
+
+    function sparkCell(pct){
+      const dot = toneDot(pct);
+      return `
+        <td class="sparkCell">
+          <div class="sparkWrap">
+            <span class="badge"><span class="dot ${dot}"></span>Avance</span>
+            <div class="spark" aria-label="avance ${pct}%"><i style="width:${pct}%;"></i></div>
+            <div class="pct">${String(pct).padStart(3,' ')}%</div>
+          </div>
+        </td>
+      `;
+    }
+
+    function render(){
+      const q = (el('q').value || "").toLowerCase().trim();
+      const sort = el('sort').value;
+
+      let rows = players
+        .filter(p => !q || p.name.toLowerCase().includes(q));
+
+      rows.sort((a,b)=>{
+        if(sort === "total_desc") return b.total - a.total;
+        if(sort === "total_asc") return a.total - b.total;
+        if(sort === "name_asc") return a.name.localeCompare(b.name);
+        if(sort === "name_desc") return b.name.localeCompare(a.name);
+        return 0;
+      });
+
+      const thead = `
+        <thead>
+          <tr>
+            <th>Alumno</th>
+            <th class="right">Total</th>
+            ${MISSIONS.map(m=>`<th>${m.label}</th>`).join('')}
+          </tr>
+        </thead>
+      `;
+
+      const tbody = rows.map(p=>{
+        const totalDot = toneDot(p.total);
+        return `
+          <tr>
+            <td>
+              <div class="nameCell">
+                <div><b>${p.name}</b></div>
+                <div class="sub">Curso: ${p.course} · ID: <span class="mono">${p.id}</span></div>
+              </div>
+            </td>
+            <td class="right">
+              <span class="badge"><span class="dot ${totalDot}"></span><span class="mono">${String(p.total).padStart(3,' ')}%</span></span>
+            </td>
+            ${MISSIONS.map(m => sparkCell(p.progress[m.key])).join('')}
+          </tr>
+        `;
+      }).join('');
+
+      el('tableWrap').innerHTML = `
+        <table>
+          ${thead}
+          <tbody>${tbody}</tbody>
+        </table>
+      `;
+    }
+
+    // --------------------------
+    // Events
+    // --------------------------
+    el('q').addEventListener('input', render);
+    el('sort').addEventListener('change', render);
+    el('btnShuffle').addEventListener('click', ()=>{
+      players = genPlayers();
+      render();
+    });
+
+    // Init
+    render();
+  </script>
+</body>
+</html>
+
