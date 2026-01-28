@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dashboard Docente · Avance del Alumno (Demo)</title>
+  <title>AtacamaScope · Dashboard Docente (Demo)</title>
   <style>
     :root{
       --bg:#0b1020;
+      --panel:#121a33;
       --text:#e9eefc;
       --muted:#aab4da;
       --border:rgba(255,255,255,.10);
@@ -17,7 +18,7 @@
       --chip:#1a2550;
       --shadow: 0 18px 40px rgba(0,0,0,.35);
       --radius: 18px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
     }
     *{box-sizing:border-box}
@@ -39,9 +40,10 @@
       justify-content:space-between;
       flex-wrap:wrap;
     }
-    .brand h1{margin:0;font-size:20px}
-    .brand p{margin:6px 0 0;color:var(--muted);font-size:13px}
-    .top-actions{display:flex;gap:10px}
+    .brand{display:flex;flex-direction:column;gap:6px}
+    .brand h1{margin:0;font-size:20px;letter-spacing:.3px}
+    .brand p{margin:0;color:var(--muted);font-size:13px;line-height:1.25}
+    .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     button, select{
       border:1px solid var(--border);
       background: rgba(255,255,255,.06);
@@ -50,8 +52,9 @@
       border-radius:12px;
       cursor:pointer;
       font-size:13px;
+      outline:none;
     }
-
+    button:hover{ background: rgba(255,255,255,.10); }
     main{
       max-width:1200px;
       margin:0 auto;
@@ -60,67 +63,72 @@
       grid-template-columns: 520px 1fr;
       gap:18px;
     }
-    @media (max-width:980px){
-      main{grid-template-columns:1fr}
+    @media (max-width: 980px){
+      main{ grid-template-columns: 1fr; }
     }
 
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
       overflow:hidden;
     }
     .card .hd{
-      padding:14px;
+      padding:14px 14px 10px;
       border-bottom:1px solid var(--border);
       display:flex;
-      justify-content:space-between;
       align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
+      justify-content:space-between;
+      gap:12px;
     }
-    .card .hd h2{margin:0;font-size:14px}
-    .card .bd{padding:14px}
-
+    .card .hd h2{font-size:14px;margin:0;color:var(--text);letter-spacing:.2px}
+    .card .bd{ padding:14px; }
     .pill{
       display:inline-flex;
       align-items:center;
       gap:8px;
-      padding:6px 10px;
+      padding:7px 10px;
       border-radius:999px;
       border:1px solid var(--border);
       background: rgba(255,255,255,.05);
       font-size:12px;
       color:var(--muted);
+      white-space:nowrap;
     }
-    .dot{width:8px;height:8px;border-radius:50%}
-    .dot.good{background:var(--good)}
-    .dot.warn{background:var(--warn)}
-    .dot.bad{background:var(--bad)}
-    .dot.info{background:var(--info)}
+    .pill b{ color:var(--text); font-weight:600; }
+    .dot{ width:8px; height:8px; border-radius:999px; display:inline-block; }
+    .dot.good{ background: var(--good); }
+    .dot.warn{ background: var(--warn); }
+    .dot.bad{ background: var(--bad); }
+    .dot.info{ background: var(--info); }
 
     .grid{
       display:grid;
-      grid-template-columns:repeat(12,1fr);
+      grid-template-columns: repeat(12, 1fr);
       gap:12px;
     }
-    .span-4{grid-column:span 4}
-    .span-6{grid-column:span 6}
-    .span-8{grid-column:span 8}
-    @media (max-width:980px){
-      .span-4,.span-6,.span-8{grid-column:span 12}
+    .span-4{ grid-column: span 4; }
+    .span-6{ grid-column: span 6; }
+    .span-8{ grid-column: span 8; }
+    .span-12{ grid-column: span 12; }
+    @media (max-width: 980px){
+      .span-4,.span-6,.span-8{ grid-column: span 12; }
     }
-
     .metric{
       padding:14px;
       border:1px solid var(--border);
       border-radius:16px;
       background: rgba(0,0,0,.18);
     }
-    .metric .k{font-size:12px;color:var(--muted)}
-    .metric .v{font-size:18px;margin-top:6px}
-
+    .metric .k{ color:var(--muted); font-size:12px; margin-bottom:6px; }
+    .metric .v{
+      font-size:18px;
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+    }
+    .metric .v small{ color:var(--muted); font-size:12px; }
     .bar{
       height:10px;
       border-radius:999px;
@@ -131,37 +139,62 @@
     }
     .bar > div{
       height:100%;
-      background: linear-gradient(90deg, #6aa9ff, #39d98a);
+      width:0%;
+      background: linear-gradient(90deg, rgba(106,169,255,1), rgba(57,217,138,1));
+      transition: width .35s ease;
     }
-
     table{
       width:100%;
       border-collapse:collapse;
-      font-size:12.5px;
-      border:1px solid var(--border);
-      border-radius:14px;
       overflow:hidden;
+      border-radius: 14px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.14);
     }
-    th,td{
-      padding:10px;
+    th, td{
+      padding:10px 10px;
       border-bottom:1px solid var(--border);
+      font-size:12.5px;
       text-align:left;
+      vertical-align:top;
     }
-    th{color:var(--muted)}
-    tr:last-child td{border-bottom:none}
+    th{ color:var(--muted); font-weight:600; }
+    tr:last-child td{ border-bottom:none; }
 
     .tag{
       display:inline-flex;
-      gap:6px;
-      align-items:center;
       padding:5px 8px;
       border-radius:999px;
-      background:var(--chip);
+      background: var(--chip);
       border:1px solid var(--border);
       font-size:12px;
+      color:var(--text);
       margin:4px 6px 0 0;
+      align-items:center;
+      gap:6px;
     }
+    .mono{ font-family: var(--mono); }
+    .muted{ color:var(--muted); }
+    .small{ font-size:12px; }
+    .ok{ color: var(--good); }
+    .warn{ color: var(--warn); }
+    .bad{ color: var(--bad); }
 
+    /* Chart */
+    .chartWrap{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .chartLegend{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .chartLegend .item{display:flex;gap:8px;align-items:center}
     canvas{
       width:100%;
       height:340px;
@@ -169,140 +202,526 @@
       border:1px solid var(--border);
       background: rgba(0,0,0,.18);
     }
-
     .footer-note{
+      color:var(--muted);
+      font-size:12px;
+      padding:12px 20px 24px;
       max-width:1200px;
       margin:0 auto;
-      padding:12px 20px;
-      font-size:12px;
-      color:var(--muted);
     }
   </style>
 </head>
 <body>
-
-<header>
-  <div class="brand">
-    <h1>Dashboard Docente · Avance del Alumno</h1>
-    <p>Vista detallada del progreso, comprensión conceptual y exploración dentro del juego.</p>
-  </div>
-  <div class="top-actions">
-    <select id="studentSelect"></select>
-    <button onclick="location.reload()">Datos demo nuevos</button>
-  </div>
-</header>
-
-<main>
-  <section class="card">
-    <div class="hd">
-      <h2>Avance por contenidos (Marte · demo)</h2>
-      <span id="statusPill" class="pill"><span class="dot info"></span> Vista demostrativa</span>
+  <header>
+    <div class="brand">
+      <h1>Dashboard Docente · Demo (Datos ficticios)</h1>
+      <p>Primera aproximación visual: progreso por contenido + progreso por objetivos + evidencias (preguntas/enciclopedia/habilidades).</p>
     </div>
-    <div class="bd">
-      <canvas id="chart"></canvas>
-      <p style="font-size:12px;color:var(--muted)">
-        *Porcentaje estimado a partir de acciones, objetivos y preguntas respondidas en la misión.
-      </p>
+    <div class="top-actions">
+      <select id="studentSelect" title="Alumno"></select>
+      <select id="stageSelect" title="Misión"></select>
+      <button id="btnRandom">Variar datos</button>
     </div>
-  </section>
+  </header>
 
-  <section class="card">
-    <div class="hd">
-      <h2>Detalle pedagógico</h2>
-      <span class="pill"><b>Curso:</b> 6° Básico · Ciencias</span>
-    </div>
-    <div class="bd">
-      <div class="grid">
-
-        <div class="metric span-4">
-          <div class="k">Alumno</div>
-          <div class="v" id="mUser">—</div>
-          <div class="bar"><div id="progressBar"></div></div>
-          <div id="progressText" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
-        </div>
-
-        <div class="metric span-4">
-          <div class="k">Misión</div>
-          <div class="v">Marte</div>
-        </div>
-
-        <div class="metric span-4">
-          <div class="k">Objetivos completados</div>
-          <div class="v" id="objPct">—</div>
-        </div>
-
-        <div class="metric span-8">
-          <div class="k">Objetivos de aprendizaje</div>
-          <div id="objectives"></div>
-        </div>
-
-        <div class="metric span-4">
-          <div class="k">Contenidos desbloqueados</div>
-          <div id="contents"></div>
-        </div>
-
-        <div class="metric span-6">
-          <div class="k">Preguntas conceptuales</div>
-          <div id="questions"></div>
-        </div>
-
-        <div class="metric span-6">
-          <div class="k">Exploración e interacción</div>
-          <div id="flags"></div>
-        </div>
-
+  <main>
+    <!-- Left: Chart -->
+    <section class="card">
+      <div class="hd">
+        <h2>Avance por contenido (Marte · demo)</h2>
+        <span id="statusPill" class="pill"><span class="dot info"></span>Vista demo</span>
       </div>
-    </div>
-  </section>
-</main>
+      <div class="bd">
+        <div class="chartWrap">
+          <div class="chartLegend">
+            <div class="item"><span class="dot info"></span> % de avance estimado por contenido</div>
+            <div class="item"><span class="dot good"></span> ≥ 80% consolidado</div>
+            <div class="item"><span class="dot warn"></span> 50–79% en proceso</div>
+            <div class="item"><span class="dot bad"></span> &lt; 50% rezago</div>
+          </div>
+          <canvas id="contentChart" width="1000" height="500"></canvas>
+          <div class="small muted">
+            *Este % se calcula con evidencias ficticias (misiones + preguntas + desbloqueos). En producción se alimenta del log real.
+          </div>
+        </div>
+      </div>
+    </section>
 
-<div class="footer-note">
-  Esta vista permite al docente acompañar el aprendizaje sin usarla como instrumento de calificación.
-</div>
+    <!-- Right: Dashboard -->
+    <section class="card">
+      <div class="hd">
+        <h2>Vista del profesor</h2>
+        <span class="pill"><b>Curso:</b> 6° Básico · Ciencias</span>
+      </div>
 
-<script>
-  const students=["Valentina R.","Matías S.","Antonia P."];
-  const student=students[Math.floor(Math.random()*students.length)];
-  document.getElementById("studentSelect").innerHTML=students.map(s=>`<option>${s}</option>`).join("");
-  document.getElementById("mUser").textContent=student;
+      <div class="bd">
+        <div class="grid">
+          <div class="metric span-4">
+            <div class="k">Alumno</div>
+            <div class="v" id="mUser">—</div>
+            <div class="bar"><div id="mProgressBar"></div></div>
+            <div class="small muted" id="mProgressText" style="margin-top:8px;">—</div>
+          </div>
 
-  const progress=Math.floor(50+Math.random()*45);
-  document.getElementById("progressBar").style.width=progress+"%";
-  document.getElementById("progressText").textContent="Avance global estimado: "+progress+"%";
-  document.getElementById("objPct").textContent=progress+"%";
+          <div class="metric span-4">
+            <div class="k">Misión</div>
+            <div class="v" id="mStage">—</div>
+            <div class="small muted" id="mStep">stageStep: —</div>
+          </div>
 
-  const objectives=[
-    "Exploró el entorno marciano",
-    "Recolectó datos científicos",
-    "Analizó la atmósfera de Marte",
-    "Reflexionó sobre la habitabilidad"
-  ];
-  document.getElementById("objectives").innerHTML=objectives.map(o=>`<div class="tag"><span class="dot good"></span>${o}</div>`).join("");
+          <div class="metric span-4">
+            <div class="k">Objetivos</div>
+            <div class="v"><span id="mObjDone">—</span> <small>/ <span id="mObjTotal">—</span> completados</small></div>
+            <div class="small muted" id="mObjPct">—</div>
+          </div>
 
-  const contents=["Atmósfera","Temperatura","Agua en Marte","Gravedad"];
-  document.getElementById("contents").innerHTML=contents.map(c=>`<div class="tag"><span class="dot info"></span>${c}</div>`).join("");
+          <div class="span-8">
+            <div class="metric">
+              <div class="k">Misiones / objetivos</div>
+              <div class="small muted" style="margin-bottom:10px;">(demo) Evidencia de avance “haciendo” dentro del juego</div>
+              <div id="objectivesTableWrap"></div>
+            </div>
+          </div>
 
-  const questions=[
-    "¿Por qué Marte es frío?",
-    "¿Qué evidencia muestra agua pasada?",
-    "¿Qué gas domina su atmósfera?"
-  ];
-  document.getElementById("questions").innerHTML="<ul>"+questions.map(q=>"<li>"+q+"</li>").join("")+"</ul>";
+          <div class="span-4">
+            <div class="metric" style="margin-bottom:12px;">
+              <div class="k">Contenidos desbloqueados (enciclopedia)</div>
+              <div id="encyWrap"></div>
+            </div>
 
-  document.getElementById("flags").innerHTML=`
-    <div class="tag"><span class="dot good"></span>Exploró zonas clave</div>
-    <div class="tag"><span class="dot warn"></span>No completó el cuestionario final</div>
-  `;
+            <div class="metric">
+              <div class="k">Habilidades desbloqueadas</div>
+              <div id="skillsWrap"></div>
+            </div>
+          </div>
 
-  const ctx=document.getElementById("chart").getContext("2d");
-  const labels=["Atmósfera","Temperatura","Agua","Habitabilidad","Tormentas"];
-  labels.forEach((l,i)=>{
-    ctx.fillStyle="#aab4da";
-    ctx.fillText(l,10,40+i*50);
-    ctx.fillStyle=i<3?"#39d98a":"#ffcc66";
-    ctx.fillRect(160,28+i*50,progress*2,16);
-  });
-</script>
+          <div class="span-6">
+            <div class="metric">
+              <div class="k">Preguntas respondidas</div>
+              <div class="small muted" style="margin-bottom:10px;">(demo) Evidencia de comprensión conceptual</div>
+              <div id="questionsTableWrap"></div>
+            </div>
+          </div>
 
+          <div class="span-6">
+            <div class="metric">
+              <div class="k">Banderas e interacción</div>
+              <div class="small muted" style="margin-bottom:10px;">(demo) Señales de exploración / persistencia</div>
+              <div id="flagsWrap"></div>
+              <div style="margin-top:10px;" class="small muted">
+                Interactuables usados: <b id="usedCount">—</b>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /grid -->
+      </div><!-- /bd -->
+    </section>
+  </main>
+
+  <div class="footer-note">
+    Siguiente paso: cuando tengas el log real de Marte, reemplazamos los datos ficticios por el “parser” real.
+    El gráfico por contenido quedará igual; solo cambia la fuente de datos.
+  </div>
+
+  <script>
+    // -----------------------------
+    // DEMO DATA (Ficticio)
+    // -----------------------------
+    const CONTENTS_MARS = [
+      "Atmósfera delgada (CO₂)",
+      "Temperatura y estaciones",
+      "Gravedad y movimiento",
+      "Agua / hielo y evidencias",
+      "Habitabilidad pasada",
+      "Tormentas de polvo"
+    ];
+
+    const ENCYC_MAP_MARS = {
+      201: "Marte",
+      202: "Atmósfera delgada",
+      203: "Tormentas de polvo",
+      204: "Agua y hielo",
+      205: "Habitabilidad pasada",
+      206: "Estaciones en Marte"
+    };
+
+    const SKILL_MAP = {
+      1:"Armadura Dron Simple",
+      2:"Filtro de Gas",
+      3:"Estabilizador de Presión",
+      4:"Armadura Atmosférica"
+    };
+
+    // 3 alumnos ficticios
+    const DEMO_STUDENTS = [
+      { id:"a1", name:"Valentina R.", course:"6°B" },
+      { id:"a2", name:"Matías S.", course:"6°B" },
+      { id:"a3", name:"Antonia P.", course:"6°B" }
+    ];
+
+    // 1 misión ficticia (Marte) + (si quieres, puedes agregar Júpiter/Saturno luego)
+    const DEMO_STAGES = [
+      { key:"1-2-Marte", label:"Mundo 1 · Marte" }
+    ];
+
+    // Genera un set de progreso ficticio por alumno
+    function makeDemoProgress(seed=0){
+      // helper pseudo-random simple (determinístico)
+      let x = 1234567 + seed*99991;
+      const rnd = (min, max) => {
+        x = (x * 1103515245 + 12345) % 2147483647;
+        const r = x / 2147483647;
+        return min + r*(max-min);
+      };
+
+      // objetivos demo: A..F
+      const objectives = {
+        explore_A: { isObjectiveComplete: rnd(0,1) > 0.25, objectiveQuantity: Math.round(rnd(2,5)) },
+        talk_B:    { isObjectiveComplete: rnd(0,1) > 0.35, objectiveQuantity: 1 },
+        pickup_C:  { isObjectiveComplete: rnd(0,1) > 0.45, objectiveQuantity: 1 },
+        analyze_D: { isObjectiveComplete: rnd(0,1) > 0.55, objectiveQuantity: 1 },
+        hack_E:    { isObjectiveComplete: rnd(0,1) > 0.65, objectiveQuantity: 1 },
+        synth_F:   { isObjectiveComplete: rnd(0,1) > 0.75, objectiveQuantity: 1 }
+      };
+
+      // preguntas demo: 4
+      const questions = [
+        { id:"MARS_Q1", text:"¿Cuál es el gas principal en Marte?", correct:"CO₂" },
+        { id:"MARS_Q2", text:"¿Por qué Marte es tan frío?", correct:"Atmósfera delgada" },
+        { id:"MARS_Q3", text:"¿Qué evidencia sugiere agua pasada?", correct:"Valles/canales" },
+        { id:"MARS_Q4", text:"¿Qué causa tormentas de polvo?", correct:"Vientos + polvo suelto" }
+      ];
+
+      const answeredQuestions = {};
+      const questionRows = questions.map(q=>{
+        const p = rnd(0,1);
+        let ans = q.correct;
+        let ok = true;
+        if(p < 0.22){ ans = "No responde"; ok = false; }
+        else if(p < 0.42){ ans = "Respuesta parcial"; ok = false; }
+        answeredQuestions[q.id] = { text:q.text, answer: ans, isCorrect: ok };
+        return { ...q, answer: ans, isCorrect: ok };
+      });
+
+      const unlockedEncy = Object.keys(ENCYC_MAP_MARS)
+        .map(Number)
+        .filter(_ => rnd(0,1) > 0.35);
+
+      const unlockedSkills = [1,2,3,4].filter(_ => rnd(0,1) > 0.45);
+
+      const flags = {
+        visited_polar_cap: rnd(0,1) > 0.55,
+        dust_storm_zone:   rnd(0,1) > 0.60,
+        completed_quiz:    rnd(0,1) > 0.40
+      };
+
+      const usedInteractablesCount = Math.round(rnd(12, 65));
+
+      // % por contenido (ficticio, pero consistente)
+      const contentProgress = CONTENTS_MARS.map((name, idx)=>{
+        // pondera con: objetivos + preguntas + ency (demo)
+        const objDone = Object.values(objectives).filter(o=>o.isObjectiveComplete).length;
+        const qOk = questionRows.filter(r=>r.isCorrect).length;
+
+        let base = 10 + (objDone/6)*55 + (qOk/4)*25; // 10..90 aprox
+        // variación por contenido
+        base += (rnd(-12, 12)) + (idx-2)*1.5;
+        base = Math.max(0, Math.min(100, Math.round(base)));
+        return { name, pct: base };
+      });
+
+      // avance global estimado (promedio contenidos)
+      const global = Math.round(contentProgress.reduce((a,b)=>a+b.pct,0)/contentProgress.length);
+
+      // stageStep ficticio
+      const stageStep = Math.min(18, Math.max(1, Math.round(rnd(3, 16))));
+
+      return {
+        stageKey: "1-2-Marte",
+        stageStep,
+        objectives,
+        questionRows,
+        unlockedEncy,
+        unlockedSkills,
+        flags,
+        usedInteractablesCount,
+        contentProgress,
+        globalProgressPct: global
+      };
+    }
+
+    const state = {
+      currentStudentId: DEMO_STUDENTS[0].id,
+      currentStageKey: DEMO_STAGES[0].key,
+      dataByStudent: new Map()
+    };
+
+    function regenAll(){
+      state.dataByStudent.clear();
+      DEMO_STUDENTS.forEach((s, i)=>{
+        state.dataByStudent.set(s.id, makeDemoProgress(i+Math.floor(Math.random()*999)));
+      });
+    }
+
+    // -----------------------------
+    // UI helpers
+    // -----------------------------
+    const el = id => document.getElementById(id);
+
+    function buildChips(indexes, map, tone='info'){
+      if(!indexes || indexes.length===0) return `<div class="muted small">—</div>`;
+      return indexes.map(i=>{
+        const label = map?.[i] ?? `Ítem ${i}`;
+        const dot = tone === 'good' ? 'good' : 'info';
+        return `<span class="tag"><span class="dot ${dot}"></span>${escapeHtml(label)}</span>`;
+      }).join('');
+    }
+
+    function buildObjectivesTable(entries){
+      if(entries.length === 0) return `<div class="muted small">No hay objetivos.</div>`;
+      const rows = entries.map(([key, v])=>{
+        const ok = !!v?.isObjectiveComplete;
+        const q = v?.objectiveQuantity ?? '—';
+        const status = ok ? `<span class="ok">✅ Completo</span>` : `<span class="warn">⏳ Pendiente</span>`;
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(key)}</td>
+            <td>${status}</td>
+            <td class="mono">${escapeHtml(String(q))}</td>
+          </tr>
+        `;
+      }).join('');
+      return `
+        <table>
+          <thead><tr><th>Clave</th><th>Estado</th><th>Qty</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function buildQuestionsTable(rows){
+      if(!rows || rows.length === 0) return `<div class="muted small">No hay preguntas.</div>`;
+      const tr = rows.map(r=>{
+        const st = r.isCorrect ? `<span class="ok">✅</span>` : `<span class="bad">✖</span>`;
+        return `
+          <tr>
+            <td>${escapeHtml(r.text)}</td>
+            <td>${escapeHtml(r.answer)}</td>
+            <td>${st}</td>
+          </tr>
+        `;
+      }).join('');
+      return `
+        <table>
+          <thead><tr><th>Pregunta</th><th>Respuesta</th><th></th></tr></thead>
+          <tbody>${tr}</tbody>
+        </table>
+      `;
+    }
+
+    function buildFlags(flags){
+      const entries = Object.entries(flags || {});
+      if(entries.length===0) return `<div class="muted small">No hay flags.</div>`;
+      return entries.map(([k,v])=>{
+        const ok = !!v;
+        return `<div class="pill" style="margin:6px 6px 0 0;">
+          <span class="dot ${ok?'good':'warn'}"></span>
+          <span class="mono">${escapeHtml(k)}</span>
+          <b style="margin-left:6px;">${ok?'true':'false'}</b>
+        </div>`;
+      }).join('');
+    }
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+      }[m]));
+    }
+
+    // -----------------------------
+    // Chart (barras horizontales)
+    // -----------------------------
+    function drawContentChart(items){
+      const canvas = el('contentChart');
+      const ctx = canvas.getContext('2d');
+
+      // HiDPI
+      const cssW = canvas.clientWidth;
+      const cssH = canvas.clientHeight;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(cssW * dpr);
+      canvas.height = Math.floor(cssH * dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+
+      // Clear
+      ctx.clearRect(0,0,cssW,cssH);
+
+      // Layout
+      const pad = 18;
+      const left = 260;      // espacio para labels
+      const top = 18;
+      const rowH = 44;
+      const barH = 16;
+      const maxBarW = cssW - left - pad - 52; // espacio para % texto
+
+      // Title
+      ctx.fillStyle = 'rgba(233,238,252,.92)';
+      ctx.font = '600 14px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+      ctx.fillText('Porcentaje de avance por contenido', pad, 16);
+
+      // Axis baseline (opcional)
+      // grid lines 0/25/50/75/100
+      const ticks = [0,25,50,75,100];
+      ctx.font = '12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
+      ticks.forEach(t=>{
+        const x = left + (t/100)*maxBarW;
+        ctx.strokeStyle = 'rgba(255,255,255,.06)';
+        ctx.beginPath(); ctx.moveTo(x, top+10); ctx.lineTo(x, cssH-pad); ctx.stroke();
+        ctx.fillStyle = 'rgba(170,180,218,.75)';
+        ctx.fillText(t+'%', x-10, cssH-10);
+      });
+
+      // Bars
+      items.forEach((it, i)=>{
+        const y = top + 36 + i*rowH;
+
+        // label
+        ctx.fillStyle = 'rgba(233,238,252,.86)';
+        ctx.font = '12.5px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+        ctx.fillText(it.name, pad, y+12);
+
+        // background bar
+        ctx.fillStyle = 'rgba(255,255,255,.08)';
+        roundRect(ctx, left, y, maxBarW, barH, 999);
+        ctx.fill();
+
+        // bar color by threshold
+        let color = 'rgba(255,92,119,.95)'; // bad
+        if(it.pct >= 80) color = 'rgba(57,217,138,.95)'; // good
+        else if(it.pct >= 50) color = 'rgba(255,204,102,.95)'; // warn
+
+        // foreground
+        const w = Math.max(0, Math.min(maxBarW, (it.pct/100)*maxBarW));
+        ctx.fillStyle = color;
+        roundRect(ctx, left, y, w, barH, 999);
+        ctx.fill();
+
+        // % text
+        ctx.fillStyle = 'rgba(233,238,252,.92)';
+        ctx.font = '600 12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
+        ctx.fillText(String(it.pct).padStart(3,' ') + '%', left + maxBarW + 12, y+13);
+      });
+    }
+
+    function roundRect(ctx, x, y, w, h, r){
+      const rr = Math.min(r, h/2, w/2);
+      ctx.beginPath();
+      ctx.moveTo(x+rr, y);
+      ctx.arcTo(x+w, y, x+w, y+h, rr);
+      ctx.arcTo(x+w, y+h, x, y+h, rr);
+      ctx.arcTo(x, y+h, x, y, rr);
+      ctx.arcTo(x, y, x+w, y, rr);
+      ctx.closePath();
+    }
+
+    // -----------------------------
+    // Render
+    // -----------------------------
+    function render(){
+      const student = DEMO_STUDENTS.find(s=>s.id===state.currentStudentId);
+      const stage = DEMO_STAGES.find(s=>s.key===state.currentStageKey);
+      const prog = state.dataByStudent.get(state.currentStudentId);
+
+      // Metrics
+      el('mUser').textContent = student?.name ?? '—';
+      el('mStage').textContent = stage?.label ?? stage?.key ?? '—';
+      el('mStep').textContent = `stageStep: ${prog?.stageStep ?? '—'}`;
+
+      const objEntries = Object.entries(prog.objectives || {});
+      const total = objEntries.length;
+      const done = objEntries.filter(([_,v])=>v?.isObjectiveComplete).length;
+
+      el('mObjDone').textContent = done;
+      el('mObjTotal').textContent = total;
+
+      const objPct = total ? Math.round((done/total)*100) : 0;
+      el('mObjPct').textContent = `Avance por objetivos: ${objPct}%`;
+
+      const global = prog.globalProgressPct ?? 0;
+      el('mProgressBar').style.width = global + '%';
+      el('mProgressText').textContent = `Progreso global (promedio contenidos): ${global}%`;
+
+      // Tables/chips
+      el('objectivesTableWrap').innerHTML = buildObjectivesTable(objEntries);
+      el('questionsTableWrap').innerHTML = buildQuestionsTable(prog.questionRows || []);
+      el('encyWrap').innerHTML = buildChips(prog.unlockedEncy || [], ENCYC_MAP_MARS, 'info');
+      el('skillsWrap').innerHTML = buildChips(prog.unlockedSkills || [], SKILL_MAP, 'good');
+      el('flagsWrap').innerHTML = buildFlags(prog.flags || {});
+      el('usedCount').textContent = prog.usedInteractablesCount ?? '—';
+
+      // Status pill
+      const pill = el('statusPill');
+      let tone = 'info';
+      let label = 'En progreso';
+      if(global >= 95) { tone='good'; label='Completada'; }
+      else if(global < 50) { tone='warn'; label='Rezago'; }
+
+      const dot = tone==='good'?'good':(tone==='warn'?'warn':'info');
+      pill.innerHTML = `<span class="dot ${dot}"></span>${label} · ${global}%`;
+
+      // Chart
+      drawContentChart(prog.contentProgress || []);
+    }
+
+    // -----------------------------
+    // Controls init
+    // -----------------------------
+    function initSelects(){
+      const sSel = el('studentSelect');
+      sSel.innerHTML = '';
+      DEMO_STUDENTS.forEach(s=>{
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        sSel.appendChild(opt);
+      });
+
+      const stSel = el('stageSelect');
+      stSel.innerHTML = '';
+      DEMO_STAGES.forEach(st=>{
+        const opt = document.createElement('option');
+        opt.value = st.key;
+        opt.textContent = st.label;
+        stSel.appendChild(opt);
+      });
+
+      sSel.value = state.currentStudentId;
+      stSel.value = state.currentStageKey;
+
+      sSel.addEventListener('change', ()=>{
+        state.currentStudentId = sSel.value;
+        render();
+      });
+
+      stSel.addEventListener('change', ()=>{
+        state.currentStageKey = stSel.value;
+        render();
+      });
+
+      el('btnRandom').addEventListener('click', ()=>{
+        regenAll();
+        render();
+      });
+
+      window.addEventListener('resize', ()=>render());
+    }
+
+    // Boot
+    regenAll();
+    initSelects();
+    render();
+  </script>
 </body>
 </html>
+
